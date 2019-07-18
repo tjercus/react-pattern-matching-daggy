@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { Future } from "ramda-fantasy";
-import { includes, filter, isEmpty } from "ramda";
+import { includes, filter, isEmpty, prop, ifElse } from "ramda";
 import { List, LIST_ITEMS } from "./types";
 import "./App.css";
 
-const mockFetchList = new Future((reject, resolve) => resolve(LIST_ITEMS));
+const mockFetchList = runAfterSeconds =>
+  new Future((reject, resolve) =>
+    setTimeout(() => resolve(LIST_ITEMS), runAfterSeconds * 1000)
+  );
 
-const hasInTitle = searchString => item => includes(searchString, item.title);
+const hasInTitle = searchString => item =>
+  includes(searchString, prop("title", item));
 
 const App = () => {
   const [list, setList] = useState(List.Initial);
   const [searchString, setSearchString] = useState("");
 
   const fetchList = () =>
-    mockFetchList.fork(() => setList(List.FetchError), wrapList);
+    mockFetchList(4).fork(() => setList(List.FetchError), wrapList);
 
   const wrapList = list =>
     setList(isEmpty(list) ? List.Empty : List.Items(list));
@@ -36,7 +40,7 @@ const App = () => {
     setSearchString(() => target.value);
 
   useEffect(() => {
-    setTimeout(() => fetchList(), 4000);
+    fetchList();
   });
 
   return (
@@ -45,7 +49,10 @@ const App = () => {
         {"Pattern matching in React with Daggy"}
       </header>
       <article className={"App-body"}>
-        <input onChange={onSearchFieldChange} />
+        <input
+          onChange={onSearchFieldChange}
+          placeholder={"Type your search ..."}
+        />
         <ul className={"center"}>
           {filterList().cata({
             Empty: () => <li>{"This list is empty"}</li>,
