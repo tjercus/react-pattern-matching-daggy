@@ -2,7 +2,7 @@ import daggy from "daggy";
 
 export const Item = daggy.tagged("Item", ["title"]);
 
-export const List = daggy.taggedSum("Page", {
+export const List = daggy.taggedSum("List", {
   Empty: [],
   Initial: [],
   Items: [Item],
