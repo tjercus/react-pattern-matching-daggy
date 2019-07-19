@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Future } from "ramda-fantasy";
-import { includes, filter, isEmpty, prop, ifElse } from "ramda";
+import { includes, filter, isEmpty, prop, pipe } from "ramda";
 import { List, LIST_ITEMS } from "./types";
 import "./App.css";
 
@@ -17,21 +17,25 @@ const App = () => {
   const [searchString, setSearchString] = useState("");
 
   const fetchList = () =>
-    mockFetchList(4).fork(() => setList(List.FetchError), wrapList);
+    mockFetchList(3).fork(
+      () => setList(List.FetchError),
+      pipe(
+        wrapFetchedList,
+        setList
+      )
+    );
 
-  const wrapList = list =>
-    setList(isEmpty(list) ? List.Empty : List.Items(list));
+  const wrapFetchedList = list =>
+    isEmpty(list) ? List.Empty : List.Items(list);
+
+  const wrapFilteredList = list =>
+    isEmpty(list) ? List.NotFound(searchString) : List.Items(list);
 
   const filterList = () =>
     list.cata({
       Empty: () => List.Empty,
       Initial: () => List.Initial,
-      Items: items => {
-        const filteredList = filter(hasInTitle(searchString), items);
-        return isEmpty(filteredList)
-          ? List.NotFound(searchString)
-          : List.Items(filteredList);
-      },
+      Items: items => wrapFilteredList(filter(hasInTitle(searchString), items)),
       NotFound: () => List.NotFound(searchString),
       FetchError: () => List.FetchError
     });
@@ -61,7 +65,7 @@ const App = () => {
               items.map(({ title }) => <li key={title}>{title}</li>),
             NotFound: searchMessage => (
               <li>
-                {"There are no results for"} '{searchMessage}'
+                {`There are no results for '${searchMessage}'`}
               </li>
             ),
             FetchError: () => <li>{"Oooooops..."}</li>
