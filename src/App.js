@@ -35,7 +35,7 @@ const App = () => {
     list.cata({
       Empty: () => List.Empty,
       Initial: () => List.Initial,
-      Items: items => wrapFilteredList(filter(hasInTitle(searchString), items)),
+      Items: pipe(filter(hasInTitle(searchString)), wrapFilteredList),
       NotFound: () => List.NotFound(searchString),
       FetchError: () => List.FetchError
     });
@@ -64,9 +64,7 @@ const App = () => {
             Items: items =>
               items.map(({ title }) => <li key={title}>{title}</li>),
             NotFound: searchMessage => (
-              <li>
-                {`There are no results for '${searchMessage}'`}
-              </li>
+              <li>{`There are no results for '${searchMessage}'`}</li>
             ),
             FetchError: () => <li>{"Oooooops..."}</li>
           })}
