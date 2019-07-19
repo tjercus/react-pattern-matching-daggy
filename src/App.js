@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Future } from "ramda-fantasy";
-import { includes, filter, isEmpty, prop, pipe } from "ramda";
+import { includes, filter, isEmpty, map, prop, pipe } from "ramda";
 import { List, LIST_ITEMS } from "./types";
 import "./App.css";
 
@@ -61,8 +61,7 @@ const App = () => {
           {filterList().cata({
             Empty: () => <li>{"This list is empty"}</li>,
             Initial: () => <li>{"Loading..."}</li>,
-            Items: items =>
-              items.map(({ title }) => <li key={title}>{title}</li>),
+            Items: map(({ title }) => <li key={title}>{title}</li>),
             NotFound: searchMessage => (
               <li>{`There are no results for '${searchMessage}'`}</li>
             ),
